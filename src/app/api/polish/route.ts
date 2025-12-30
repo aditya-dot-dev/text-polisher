@@ -9,20 +9,36 @@ function basicPolish(input: string) {
     return text;
 }
 
+function systemPromptByMode(mode: string) {
+    switch (mode) {
+        case "resume":
+            return "Rewrite the text as a single strong resume bullet. Use an action verb. Be concise. Do not add explanations, headings, or extra details. Output ONLY the final sentence.";
+
+        case "linkedin":
+            return "Rewrite the text for LinkedIn. Professional, confident tone. One short paragraph. No emojis. No explanations. Output ONLY the final text.";
+
+        case "email":
+            return "Rewrite the text as a short, clear, professional cold email. Polite and confident. Do not add subject lines or explanations. Output ONLY the email body.";
+
+        default: // prompt
+            return "Rewrite the text into a short, clear instruction-style AI prompt. Do NOT add lists, bullets, examples, explanations, or extra details. Keep it concise. Output ONLY the final prompt text.";
+    }
+}
+
+
 
 export async function POST(req: Request) {
     try {
-        const { text } = await req.json();
+        const body = await req.json();
+        const text = body.text;
+        const mode = body.mode || "prompt";
 
         if (!text || !text.trim()) {
             return NextResponse.json({ error: "Text is required" }, { status: 400 });
         }
 
         if (text.length > 1000) {
-            return NextResponse.json(
-                { error: "Text too long" },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: "Text too long" }, { status: 400 });
         }
 
         const response = await fetch(
@@ -38,8 +54,7 @@ export async function POST(req: Request) {
                     messages: [
                         {
                             role: "system",
-                            content:
-                                "You polish text. Make it clear, clean, and professional. Do not change meaning.",
+                            content: systemPromptByMode(mode),
                         },
                         { role: "user", content: text },
                     ],
@@ -49,14 +64,22 @@ export async function POST(req: Request) {
             }
         );
 
+        if (!response.ok) {
+            const err = await response.text();
+            console.error("Groq error:", err);
+            return NextResponse.json(
+                { error: "AI service error" },
+                { status: 500 }
+            );
+        }
 
         const data = await response.json();
         const result =
             data?.choices?.[0]?.message?.content || basicPolish(text);
 
-
         return NextResponse.json({ result });
-    } catch (e) {
+    } catch (err) {
+        console.error("Server error:", err);
         return NextResponse.json(
             { error: "AI processing failed" },
             { status: 500 }
