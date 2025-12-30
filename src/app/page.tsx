@@ -2,29 +2,25 @@
 
 import { useState } from "react";
 
+async function polishWithApi(text: string) {
+  const res = await fetch("/api/polish", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+
+  const data = await res.json();
+  return data.result;
+}
+
+
 export default function Home() {
   const [text, setText] = useState("");
   const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function polishText(input: string) {
-    let text = input.trim();
 
-    // remove extra spaces
-    text = text.replace(/\s+/g, " ");
-
-    // fix space before punctuation
-    text = text.replace(/\s+([.,!?])/g, "$1");
-
-    // capitalize first letter
-    text = text.charAt(0).toUpperCase() + text.slice(1);
-
-    // ensure sentence ends properly
-    if (!/[.!?]$/.test(text)) {
-      text += ".";
-    }
-
-    return text;
-  }
 
 
   return (
@@ -42,11 +38,23 @@ export default function Home() {
 
       <button
         className="self-start px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
-        onClick={() => setOutput(polishText(text))}
+        onClick={async () => {
+          try {
+            setError("");
+            setLoading(true);
+            const result = await polishWithApi(text);
+            setOutput(result);
+          } catch {
+            setError("Something went wrong. Try again.");
+          } finally {
+            setLoading(false);
+          }
+        }}
         disabled={!text.trim()}
       >
-        Polish Text
+        {loading ? "Polishing..." : "Polish Text"}
       </button>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
 
       {output && (
         <div className="mt-6 border rounded-md p-3 bg-gray-50 relative">
