@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-async function polishWithApi(text: string, mode: string) {
+async function polishWithApi(text: string, mode: string, tone: string) {
   const res = await fetch("/api/polish", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, mode }),
+    body: JSON.stringify({ text, mode, tone }),
   });
 
   const data = await res.json();
@@ -50,9 +50,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState<"yes" | "no" | null>(null);
-  const [mode, setMode] = useState("prompt");
+  const [mode, setMode] = useState("rewrite");
   const [copied, setCopied] = useState(false);
-
+  const [tone, setTone] = useState("formal");
 
 
   return (
@@ -67,6 +67,7 @@ export default function Home() {
 
       <div className="flex gap-2 flex-wrap">
         {[
+          { id: "rewrite", label: "Rewrite" },
           { id: "prompt", label: "Prompt" },
           { id: "resume", label: "Resume" },
           { id: "linkedin", label: "LinkedIn" },
@@ -74,7 +75,10 @@ export default function Home() {
         ].map((m) => (
           <button
             key={m.id}
-            onClick={() => setMode(m.id)}
+            onClick={() => {
+              setMode(m.id);
+              if (m.id === "rewrite") setTone("formal");
+            }}
             className={`px-3 py-1 rounded border text-sm ${mode === m.id ? "bg-black text-white" : ""
               }`}
           >
@@ -83,6 +87,21 @@ export default function Home() {
         ))}
 
       </div>
+      {mode === "rewrite" && (
+        <div className="flex gap-2 mb-2">
+          {["casual", "formal", "polite"].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTone(t)}
+              className={`px-3 py-1 text-xs border rounded ${tone === t ? "bg-black text-white" : ""
+                }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
       <p className="text-xs text-gray-600 mb-2">
         {modeHint(mode)}
       </p>
@@ -91,14 +110,17 @@ export default function Home() {
       <textarea
         className="w-full border rounded-md p-3 min-h-[150px] focus:outline-none focus:ring-2 focus:ring-black"
         placeholder={
-          mode === "prompt"
-            ? "Paste your AI prompt..."
-            : mode === "resume"
-              ? "Paste a resume bullet..."
-              : mode === "linkedin"
-                ? "Paste LinkedIn text..."
-                : "Paste your email..."
+          mode === "rewrite"
+            ? "Paste a sentence to rewrite..."
+            : mode === "prompt"
+              ? "Paste your AI prompt..."
+              : mode === "resume"
+                ? "Paste a resume bullet..."
+                : mode === "linkedin"
+                  ? "Paste LinkedIn text..."
+                  : "Paste your email..."
         }
+
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
@@ -116,7 +138,7 @@ export default function Home() {
           try {
             setError("");
             setLoading(true);
-            const result = await polishWithApi(text, mode);
+            const result = await polishWithApi(text, mode, tone);
             setOutput(result);
           } catch {
             setError("Something went wrong. Try again.");

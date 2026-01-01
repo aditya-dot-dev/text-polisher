@@ -9,33 +9,40 @@ function basicPolish(input: string) {
     return text;
 }
 
-function systemPromptByMode(mode: string) {
+function systemPromptByMode(mode: string, tone: string) {
     switch (mode) {
+        case "rewrite":
+            return `
+Rewrite the text to correct grammar and improve clarity.
+Preserve the original meaning, intent, and sentence type exactly.
+Do NOT change a question into a statement or vice versa.
+Do NOT ask for additional information.
+Do NOT add new context, time references, or details.
+If honorifics like "sir" are present, preserve them.
+Avoid stacking politeness phrases.
+Allow small wording changes only if required to match the selected tone.
+Use a ${tone} tone.
+Output ONLY the rewritten text.
+`;
         case "resume":
-            return "Rewrite the text as a single strong resume bullet. Use an action verb. Be concise. Do not add explanations, headings, or extra details. Output ONLY the final sentence.";
+            return "Rewrite the text as a single strong resume bullet. Use an action verb. Be concise. Output ONLY the final sentence.";
 
         case "linkedin":
-            return "Rewrite the text for LinkedIn. Professional, confident tone. One short paragraph. No emojis. No explanations. Output ONLY the final text.";
+            return "Rewrite the text for LinkedIn. Professional and confident tone. One short paragraph. Output ONLY the final text.";
 
         case "email":
-            return "Rewrite the text as a short, clear, professional cold email. Polite and confident. Do not add subject lines or explanations. Output ONLY the email body.";
+            return "Rewrite the text as a short, clear, professional cold email. Polite and confident. Output ONLY the email body.";
 
-        default: // prompt
+        default:
             return `
 Rewrite the text into a clear AI prompt.
-
-Rules:
-- Preserve ALL important context, names, and details.
-- Do NOT remove product names, audience, platform, or intent.
-- Do NOT generalize or oversimplify.
-- Do NOT add new ideas or creativity.
-- Make the instruction clearer and reusable in AI tools.
-
+Preserve ALL context, names, audience, platform, and intent.
+Do NOT generalize, oversimplify, or add creativity.
 Output ONLY the final rewritten prompt.
 `;
-
     }
 }
+
 
 
 
@@ -44,6 +51,7 @@ export async function POST(req: Request) {
         const body = await req.json();
         const text = body.text;
         const mode = body.mode || "prompt";
+        const tone = body.tone || "neutral";
 
         if (!text || !text.trim()) {
             return NextResponse.json({ error: "Text is required" }, { status: 400 });
@@ -66,7 +74,7 @@ export async function POST(req: Request) {
                     messages: [
                         {
                             role: "system",
-                            content: systemPromptByMode(mode),
+                            content: systemPromptByMode(mode, tone),
                         },
                         { role: "user", content: text },
                     ],
