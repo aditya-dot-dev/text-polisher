@@ -21,7 +21,19 @@ function systemPromptByMode(mode: string) {
             return "Rewrite the text as a short, clear, professional cold email. Polite and confident. Do not add subject lines or explanations. Output ONLY the email body.";
 
         default: // prompt
-            return "Rewrite the text into a short, clear instruction-style AI prompt. Do NOT add lists, bullets, examples, explanations, or extra details. Keep it concise. Output ONLY the final prompt text.";
+            return `
+Rewrite the text into a clear AI prompt.
+
+Rules:
+- Preserve ALL important context, names, and details.
+- Do NOT remove product names, audience, platform, or intent.
+- Do NOT generalize or oversimplify.
+- Do NOT add new ideas or creativity.
+- Make the instruction clearer and reusable in AI tools.
+
+Output ONLY the final rewritten prompt.
+`;
+
     }
 }
 
