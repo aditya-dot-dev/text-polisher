@@ -13,16 +13,19 @@ function systemPromptByMode(mode: string, tone: string) {
     switch (mode) {
         case "rewrite":
             return `
-Rewrite the text to correct grammar and improve clarity.
-Preserve the original meaning, intent, and sentence type exactly.
-Do NOT change a question into a statement or vice versa.
-Do NOT ask for additional information.
-Do NOT add new context, time references, or details.
-If honorifics like "sir" are present, preserve them.
-Avoid stacking politeness phrases.
-Allow small wording changes only if required to match the selected tone.
-Use a ${tone} tone.
-Output ONLY the rewritten text.
+You are a rewriting assistant.
+
+Rules (STRICT):
+- Rewrite ONLY the given sentence.
+- Correct grammar and improve wording.
+- Preserve the original meaning and intent exactly.
+- Do NOT add examples, features, explanations, questions, or lists.
+- Do NOT expand the content.
+- Do NOT add new ideas.
+- Keep it as a single sentence.
+- Use a ${tone} tone.
+
+Output ONLY the rewritten sentence.
 `;
         case "resume":
             return "Rewrite the text as a single strong resume bullet. Use an action verb. Be concise. Output ONLY the final sentence.";
