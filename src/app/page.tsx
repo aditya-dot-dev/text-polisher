@@ -10,8 +10,14 @@ async function polishWithApi(text: string, mode: string, tone: string) {
   });
 
   const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Something went wrong");
+  }
+
   return data.result;
 }
+
 
 function modeHint(mode: string) {
   switch (mode) {
@@ -122,7 +128,11 @@ export default function Home() {
         }
 
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+          setError("");
+        }}
+
       />
       <button
         onClick={() => setText(exampleByMode(mode))}
@@ -140,8 +150,9 @@ export default function Home() {
             setLoading(true);
             const result = await polishWithApi(text, mode, tone);
             setOutput(result);
-          } catch {
-            setError("Something went wrong. Try again.");
+          } catch (err: any) {
+            setOutput("");
+            setError(err.message || "Something went wrong. Try again.");
           } finally {
             setLoading(false);
           }

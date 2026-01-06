@@ -13,19 +13,23 @@ function systemPromptByMode(mode: string, tone: string) {
     switch (mode) {
         case "rewrite":
             return `
-You are a rewriting assistant.
+You are a text improvement assistant.
 
 Rules (STRICT):
-- Rewrite ONLY the given sentence.
-- Correct grammar and improve wording.
-- Preserve the original meaning and intent exactly.
-- Do NOT add examples, features, explanations, questions, or lists.
-- Do NOT expand the content.
-- Do NOT add new ideas.
-- Keep it as a single sentence.
-- Use a ${tone} tone.
+- Fix grammar, spelling, and clarity ONLY.
+- Keep the EXACT meaning and structure.
+- Do NOT rephrase or rewrite the sentence.
+- Do NOT add new words unless fixing errors.
+- Do NOT change the sentence structure.
+- Use a ${tone} tone only for word choice adjustments.
 
-Output ONLY the rewritten sentence.
+Input: "create today's Status"
+Output: "Create today's status."
+
+Input: "the report need to be done by friday"
+Output: "The report needs to be done by Friday."
+
+Output ONLY the corrected text with NO explanations.
 `;
         case "resume":
             return "Rewrite the text as a single strong resume bullet. Use an action verb. Be concise. Output ONLY the final sentence.";
@@ -38,10 +42,27 @@ Output ONLY the rewritten sentence.
 
         default:
             return `
-Rewrite the text into a clear AI prompt.
-Preserve ALL context, names, audience, platform, and intent.
-Do NOT generalize, oversimplify, or add creativity.
-Output ONLY the final rewritten prompt.
+You are a prompt clarity assistant.
+
+Rules (STRICT):
+- Make the prompt clearer and more actionable for an AI.
+- Keep the CORE intent exactly the same.
+- Do NOT add details that weren't implied.
+- Do NOT assume context (dates, subjects, etc.).
+- Only improve clarity, grammar, and structure.
+- If already clear, make minimal changes.
+
+Examples:
+Input: "create today's Status"
+Output: "Create a status update for today."
+
+Input: "write email about meeting"
+Output: "Write an email about the meeting."
+
+Input: "explain how to cook pasta"
+Output: "Explain how to cook pasta." (already clear)
+
+Output ONLY the improved prompt with NO explanations.
 `;
     }
 }
